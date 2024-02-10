@@ -21,8 +21,7 @@ const monogSanitize = require("express-mongo-sanitize");
 const helmet = require("helmet");
 const MongoStore = require("connect-mongo");
 
-// const mongoUrl = process.env.MONGO_URL
-const mongoUrl = "mongodb://127.0.0.1:27017/yelpCamp";
+const mongoUrl = process.env.MONGO_URL
 mongoose
   .connect(mongoUrl)
   .then(() => console.log("Connected to DB"))
@@ -34,6 +33,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 // middleware
+const secretKey = process.env.SECRET_KEY
 app.use(helmet());
 app.use(monogSanitize());
 app.use(express.static(path.join(__dirname, "public")));
@@ -44,21 +44,20 @@ const store = MongoStore.create({
   mongoUrl: mongoUrl,
   touchAfter: 24 * 60 * 60,
   crypto: {
-    secret: "averybadsecret!",
+    secret: secretKey,
   },
 });
 
-store.on("error", (err) => console.log("store error", err));
 app.use(
   session({
-    secret: "averybadsecret!",
+    secret: secretKey,
     name: "session",
     store,
     resave: false,
     saveUninitialized: true,
     cookie: {
       httpOnly: true,
-      // secure: true,
+      secure: true,
       maxAge: 1000 * 3600 * 24 * 7,
     },
   })
